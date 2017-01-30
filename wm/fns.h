@@ -72,6 +72,7 @@ int uresize(Window w, double aratio, int edge, int but, int mvbut, Rect *r);
 /* util.c */
 int max(int a, int b);
 int min(int a, int b);
+int mod(int a, int b);
 void die(char *fmt, ...) CHECKFMT;
 void err(char *fmt, ...) CHECKFMT;
 void debug(char *fmt, ...) CHECKFMT;

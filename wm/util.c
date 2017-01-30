@@ -18,6 +18,21 @@ min(int a, int b)
 	return b<a? b : a;
 }
 
+int
+mod(int a, int b)
+{
+	int y;
+	
+	if (b < 0) {
+		return mod(a, -b);
+	}
+	y = a % b;
+	if (y < 0) {
+		y += b;
+	}
+	return y;
+}
+
 static
 void
 vfprint(FILE *fp, char *fmt, va_list ap)
