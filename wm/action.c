@@ -21,13 +21,14 @@
 void
 arun(void)
 {
-	SPAWN("dmenu_run", "-fn", "-*-clean-*-r-*-*-13-*-*-*-*-*-*-*", "-sb", "#444", nil);
+	SPAWN("dmenu_run", "-l", "5", "-fn", "terminus", nil);
 }
 
 void
 anew(void)
 {
-	SPAWN("9term", nil);
+	SPAWN("9term", "-f", "/opt/plan9port/font/vga/vga.font", nil);
+	// (font stolen from 9front)
 }
 
 static
