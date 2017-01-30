@@ -1,12 +1,13 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <X11/cursorfont.h>
-#include <X11/keysym.h>
+#include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
+#include <X11/cursorfont.h>
+#include <X11/keysym.h>
 #include "dat.h"
 #include "fns.h"
 
@@ -174,22 +175,18 @@ init(void)
 	actionmenu.item = actionitem;
 	virtmenu.item = virtitem;
 
-	mod = XK_Super_L;
-	XRebindKeysym(dpy, XK_F8, &mod, 1, (uchar *)"RUN", sizeof("RUN"));
-	XRebindKeysym(dpy, XK_F12, &mod, 1, (uchar *)"DUMP", sizeof("DUMP"));
-	XRebindKeysym(dpy, XK_Delete, &mod, 1, (uchar *)"QUIT", sizeof("QUIT"));
-	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_F8), AnyModifier,
+	XGrabKey(dpy, XKeysymToKeycode(dpy, XF86XK_Launch0), AnyModifier,
 	    root, False, GrabModeSync, GrabModeSync);
-	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_F12), AnyModifier,
-	    root, False, GrabModeSync, GrabModeSync);
-	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Delete), AnyModifier,
+	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Next_Virtual_Screen), AnyModifier,
+             root, False, GrabModeSync, GrabModeSync);
+ 	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Prev_Virtual_Screen), AnyModifier,
+             root, False, GrabModeSync, GrabModeSync);
+	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Tab), AnyModifier, 
 	    root, False, GrabModeSync, GrabModeSync);
 
 	mod = XK_Alt_L;
 	XRebindKeysym(dpy, XK_Tab, &mod, 1, (uchar *)"SWITCH", sizeof("SWITCH"));
-	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Tab), AnyModifier,
-	    root, False, GrabModeSync, GrabModeSync);
-
+	
 	XGrabButton(dpy, Button1, AnyModifier, root, False, ButtonMask,
 	    GrabModeSync, GrabModeAsync, None, None);
 	XGrabButton(dpy, Button3, AnyModifier, root, False, ButtonMask,

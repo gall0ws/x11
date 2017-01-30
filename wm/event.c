@@ -1,6 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
-#include <X11/keysym.h>
+#include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -90,7 +90,7 @@ button3(XButtonEvent *e)
 	Client *c;
 	Rect r;
 	int res, edge;
-	int forcemenu;
+	int forcemenu = 0;
 
 	c = getclient(e->subwindow, 0);
 	if (c != nil) {
@@ -309,18 +309,24 @@ ekey(XKeyEvent *e)
 	mode = ReplayKeyboard;
 	if (e->type == KeyPress) {
 		XLookupString(e, buf, sizeof(buf), &ksym, nil);
-		if (strcmp(buf, "SWITCH") == 0) {
-			aswitchwin();
-			mode = SyncKeyboard;
-			discard(None, FocusChangeMask, nil);
-		} else if (strcmp(buf, "RUN") == 0) {
+		switch (ksym) {
+		case XK_Tab:
+			if ((strcmp(buf, "SWITCH") == 0)) {
+				aswitchwin();
+				mode = SyncKeyboard;
+				discard(None, FocusChangeMask, nil);
+			}
+			break;	
+		case XF86XK_Launch0:
 			arun();
 			mode = SyncKeyboard;
-		} else if (strcmp(buf, "DUMP") == 0) {
-			dumpclients();
-			mode = SyncKeyboard;
-		} else if (strcmp(buf, "QUIT") == 0) {
-			exit(0);
+			break;
+		case XK_Next_Virtual_Screen:
+			aswitchvirt(mod(curvirt + 1,NVirtuals));
+			break;
+		case XK_Prev_Virtual_Screen:
+			aswitchvirt(mod(curvirt - 1, NVirtuals));
+			break;
 		}
 	}
 	XAllowEvents(dpy, mode, e->time);
@@ -329,10 +335,13 @@ ekey(XKeyEvent *e)
 /* clients that on MapRequest will be manually resized. */
 static char *rcname[] = {
 	"9term",
+	"acme",
+	"djview",
 	"mupdf",
+	"rxvt",
+	"sam",
 	"urxvt",
 	"xterm",
-	"djview",
 	nil,
 };
 
