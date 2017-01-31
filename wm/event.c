@@ -79,7 +79,6 @@ button2(XButtonEvent *e)
 	if (v == -1 || v == curvirt) {
 		return;
 	}
-	virtmenu.lasthit = v;
 	aswitchvirt(v);
 }
 

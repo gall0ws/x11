@@ -131,6 +131,7 @@ aswitchvirt(int v)
 	curvirt = v;
 	apply(current, map);
 	active(current);
+	virtmenu.lasthit = v;
 }
 
 /* switch to ith client and return the next candidate's index */
