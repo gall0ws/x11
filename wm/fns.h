@@ -17,6 +17,7 @@ void adelete(void);
 void ahide(void);
 void aswitchvirt(int v);
 void aswitchwin(void);
+void aterm(void);
 
 /* client.c */
 Client *newclient(Window w);

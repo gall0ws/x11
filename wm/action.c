@@ -6,8 +6,9 @@
 #include "dat.h"
 #include "fns.h"
 
-static char *cmdrun[] =	{ "dmenu_run",  "-l", "5", "-fn", "terminus", nil };
-static char *cmdnew[] =	{ "9term", "-f", "/opt/plan9port/font/vga/vga.font", nil };
+static char *cmdrun[] =		{ "dmenu_run",  "-l", "5", "-fn", "terminus", nil };
+static char *cmdnew[] =		{ "9term", "-f", "/opt/plan9port/font/vga/vga.font", nil };
+static char *cmdterm[] =	{ "rxvt", nil };
 
 static
 void
@@ -209,4 +210,10 @@ aswitchwin(void)
 	}
 quit:
 	XUngrabKeyboard(dpy, CurrentTime);
+}
+
+void
+aterm(void)
+{
+	spawn(cmdterm);
 }

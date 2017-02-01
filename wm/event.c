@@ -320,6 +320,10 @@ ekey(XKeyEvent *e)
 			arun();
 			mode = SyncKeyboard;
 			break;
+		case XF86XK_Terminal:
+			aterm();
+			mode = SyncKeyboard;
+			break;
 		case XK_Next_Virtual_Screen:
 			aswitchvirt(mod(curvirt + 1,NVirtuals));
 			break;

@@ -177,6 +177,8 @@ init(void)
 
 	XGrabKey(dpy, XKeysymToKeycode(dpy, XF86XK_Launch0), AnyModifier,
 	    root, False, GrabModeSync, GrabModeSync);
+	XGrabKey(dpy, XKeysymToKeycode(dpy, XF86XK_Terminal), AnyModifier,
+	    root, False, GrabModeSync, GrabModeSync);
 	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Next_Virtual_Screen), AnyModifier,
              root, False, GrabModeSync, GrabModeSync);
  	XGrabKey(dpy, XKeysymToKeycode(dpy, XK_Prev_Virtual_Screen), AnyModifier,
