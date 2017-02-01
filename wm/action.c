@@ -6,29 +6,35 @@
 #include "dat.h"
 #include "fns.h"
 
-#define SPAWN(cmd, ...)\
-{\
-	switch (fork()) {\
-		case -1:\
-			die("could not fork:");\
-		case 0:\
-			if (execlp(cmd, cmd, __VA_ARGS__) == -1) {\
-				err("exec failed:");\
-			}\
-	}\
+static char *cmdrun[] =	{ "dmenu_run",  "-l", "5", "-fn", "terminus" };
+static char *cmdnew[] =	{ "9term", "-f", "/opt/plan9port/font/vga/vga.font" };
+
+static
+void
+spawn(char **argv)
+{
+	switch (fork()) {
+	case -1:
+		die("could not fork:");
+		break;
+	case 0:
+		if (execvp(*argv, argv) <0) {
+			err("exec failed:");
+		}
+		break;
+	}
 }
 
 void
 arun(void)
 {
-	SPAWN("dmenu_run", "-l", "5", "-fn", "terminus", nil);
+	spawn(cmdrun);
 }
 
 void
 anew(void)
 {
-	SPAWN("9term", "-f", "/opt/plan9port/font/vga/vga.font", nil);
-	// (font stolen from 9front)
+	spawn(cmdnew);
 }
 
 static
