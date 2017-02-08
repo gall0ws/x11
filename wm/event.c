@@ -37,7 +37,7 @@ button1(XButtonEvent *e)
 			p = t;
 		}
 		map(c);
-		active(c);
+		wraise(c);
 		return;
 	}
 	c = getclient(e->subwindow, 0);
@@ -52,7 +52,7 @@ button1(XButtonEvent *e)
 			debug("current client: replaying pointer");
 			XAllowEvents(dpy, ReplayPointer, e->time);
 		} else {
-			active(c);
+			wraise(c);
 			XAllowEvents(dpy, SyncPointer, e->time);
 		}
 	} else {
@@ -63,7 +63,7 @@ button1(XButtonEvent *e)
 			return;
 		}
 		geom(c, &r, 0);
-		active(c);
+		wraise(c);
 	}
 }
 
@@ -138,7 +138,7 @@ button3(XButtonEvent *e)
 		return;
 	}
 	geom(c, &r, 0);
-	active(c);
+	wraise(c);
 }
 
 void
@@ -248,7 +248,7 @@ econfigreq(XConfigureRequestEvent *e)
 			map(c);
 			/* fall-through */
 		case NormalState:
-			active(c);
+			wraise(c);
 			break;
 		}
 	}
@@ -284,13 +284,23 @@ ecross(XCrossingEvent *e)
 {
 	Client *c;
 
-	debug("event rcvd for %#x", (int)e->window);
+	debug("event rcvd for %#x: notify: %s",
+		(int)e->window, (e->type == EnterNotify)? "Enter" : "Leave");
 	if (e->type == LeaveNotify) {
 		c = getclient(e->window, 0);
 		if (c == nil) {
 			return;
 		}
 		XUndefineCursor(dpy, c->frame);
+		if (focuspolicy == FocusSloppy) {
+			deactive(c);
+		}
+	} else if (e->type == EnterNotify && focuspolicy != FocusClick) {
+		c = getclient(e->window, 0);
+		if (c == nil) {
+			return;
+		}
+		active(c);
 	}
 }
 
@@ -311,7 +321,7 @@ edestroy(XDestroyWindowEvent *e)
 		if (p == nil) {
 			p = current;
 		}
-		active(p);
+		wraise(p);
 	}
 	freeclient(c);
 }
@@ -415,7 +425,7 @@ emapreq(XMapRequestEvent *e)
 	}
 	map(c);
 	geom(c, &r, 0);
-	active(c);
+	wraise(c);
 quit:
 	/* this has to be done after map(c) to avoid flickering */
 	XUnmapWindow(dpy, blankwin);
@@ -516,7 +526,7 @@ eunmap(XUnmapEvent *e)
 			if (p == nil) {
 				p = current;
 			}
-			active(p);
+			wraise(p);
 		}
 		add(&limbo, c);
 	}

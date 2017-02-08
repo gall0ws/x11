@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <libgen.h>
 
 #include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
@@ -193,7 +194,7 @@ init(void)
 
 	mod = XK_Alt_L;
 	XRebindKeysym(dpy, XK_Tab, &mod, 1, (uchar *)"SWITCH", sizeof("SWITCH"));
-	
+
 	XGrabButton(dpy, Button1, AnyModifier, root, False, ButtonMask,
 	    GrabModeSync, GrabModeAsync, None, None);
 	XGrabButton(dpy, Button3, AnyModifier, root, False, ButtonMask,
@@ -201,11 +202,36 @@ init(void)
 }
 
 int
-main(void)
+main(int argc, char **argv)
 {
 	XEvent e;
+	int ch;
+	char *name;
 
-	setprogname("wm");
+	name = basename(argv[0]);
+	setprogname(name);
+
+	while ((ch = getopt(argc, argv, "cfs")) != -1) {
+		switch (ch) {
+			case 'c':
+				focuspolicy = FocusClick;
+				break;
+			case 'f':
+				focuspolicy = FocusFollowMouse;
+				break;
+			case 's':
+				focuspolicy = FocusSloppy;
+				err("*** sloppy focus policy is bugged! ***");
+				break;
+			case '?':
+			default:
+				printf("usage:  %s [-fsc]\n", name);
+				exit(64);
+		}
+	}
+	argc -= optind;
+	argv += optind;
+
 	if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
 		die("failed signal:");
 	}

@@ -129,6 +129,7 @@ setactive(Client *c, int on)
 {
 	Window focus;
 
+	c->hasfocus = on;
 	debug("%#x (%d)", clientid(c), on);
 	if (on) {
 		focus = c->setinput? c->window : nofocus;
@@ -197,8 +198,7 @@ geom(Client *c, Rect *r, int win)
 	XConfigureWindow(dpy, c->window, mask, &wc);
 }
 
-void
-active(Client *c)
+void wraise(Client *c)
 {
 	debug("%#x", clientid(c));
 	if (c == nil) {
@@ -217,6 +217,45 @@ active(Client *c)
 		add(&current, c);
 	}
 	setactive(c, 1);
+}
+
+void
+active(Client *c)
+{
+	Client *p;
+
+	debug("%#x", clientid(c));
+	if (c == nil) {
+		debug("skipping unknown window %#x", clientid(c));
+		return;
+	}
+	if (focuspolicy == FocusClick) {
+		wraise(c);
+		return;
+	} else {
+		for (p=clients[curvirt]; p!=nil; p=p->next) {
+			if (p->hasfocus) {
+				setactive(p, 0);
+			}
+		}
+	}
+	setactive(c, 1);
+}
+
+/* used only when using sloppy focus policy is on */
+void
+deactive(Client *c)
+{
+	if (c == nil) {
+		debug("skipping unknown window %#x", clientid(c));
+		return;
+	}
+	if (focuspolicy != FocusSloppy) {
+		err("focus policy is not FocusSloppy: this should never happen");
+		return;
+	}
+	setactive(c, 0);
+	XSetInputFocus(dpy, None, None, CurrentTime);
 }
 
 /* ICCCM 2.0, 4.1.2.3

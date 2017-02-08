@@ -18,6 +18,12 @@
 #define nil		((void *)0)
 
 enum {
+	FocusClick,
+	FocusFollowMouse,
+	FocusSloppy,
+};
+
+enum {
 	BorderWidth 	= 4,
 	NVirtuals 	= 4,
 };
@@ -91,6 +97,7 @@ struct Client {
 	int	state;
 	int	setinput : 1;
 	int	is9term  : 1;
+	int	hasfocus: 1;
 	char	*rcname;
 	char	*class;
 	char	*name;
@@ -127,6 +134,7 @@ Client	*clients[NVirtuals];
 Client	*hiddens;
 Client	*limbo;
 ulong	bcolor[2];	/* inactive, active */
+int	focuspolicy;
 int	curvirt;
 int	screen;
 int	rootdx;
