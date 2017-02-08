@@ -1,3 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <unistd.h>
+#include <X11/Xlib.h>
+
 #define ButtonMask	ButtonPressMask | ButtonReleaseMask
 #define KeyMask		KeyPressMask | KeyReleaseMask
 #define CrossingMask	EnterWindowMask | LeaveWindowMask

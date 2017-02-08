@@ -1,13 +1,12 @@
 #include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
+
 #include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
-#include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
+
 #include "dat.h"
 #include "fns.h"
 
@@ -58,18 +57,22 @@ adoptclients(void)
 	Rect r;
 
 	XGrabServer(dpy);
+	debug("quering tree");
 	if (!XQueryTree(dpy, root, &dummy, &dummy, &win, &n)) {
 		err("could not get windows tree for root %#x", (int)root);
 		goto quit;
 	}
+	debug("%d clients found", n);
 	for (i=0; i<n; i++) {
 		if (!XGetWindowAttributes(dpy, win[i], &attr)) {
 			err("could not get window attributes for %#x", (int)win[i]);
 			continue;
 		}
 		if (attr.class == InputOnly || attr.override_redirect) {
+			debug("skipping %#x", (int)win[i]);
 			continue;
 		}
+		debug("adopting %#x", (int)win[i]);
 		c = newclient(win[i]);
 		r.x = attr.x;
 		r.y = attr.y;
@@ -127,6 +130,7 @@ init(void)
 	XSetWindowAttributes attr;
 	KeySym mod;
 
+	// atoms
 	net_active_window = XInternAtom(dpy, "_NET_ACTIVE_WINDOW", False);
 	net_wm_icon_name = XInternAtom(dpy, "_NET_WM_ICON_NAME", False);
 	net_wm_name = XInternAtom(dpy, "_NET_WM_NAME", False);
@@ -138,16 +142,17 @@ init(void)
 	wm_state = XInternAtom(dpy, "WM_STATE", False);
 	wm_take_focus = XInternAtom(dpy, "WM_TAKE_FOCUS", False);
 
+	// frame colors
 	bcolor[Active] = 0xFF57A8A8;
 	bcolor[Inactive] = 0xFF9FEFEF;
 
+	// creating blankwin
 	mask = CWOverrideRedirect;
 	attr.override_redirect = 1;
 	nofocus = XCreateWindow(dpy, root, -10, -10, 1, 1, 0, 
 	    0, InputOnly, CopyFromParent, mask, &attr);
 	XMapWindow(dpy, nofocus);
 	XSetInputFocus(dpy, nofocus, None, CurrentTime);
-
 	mask = CWBackPixel | CWBorderPixel | CWOverrideRedirect;
 	attr.background_pixel = 0xFFEFEFEF;
 	attr.border_pixel = 0xFFAA0000;
@@ -268,7 +273,7 @@ main(void)
 			/* ignored */
 			break;
 		default:
-			err("main loop: unexpected event %d", e.type);
+			debug("event loop: unexpected event %d", e.type);
 		}
 	}
 	return 0;

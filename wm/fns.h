@@ -1,14 +1,24 @@
 #define CHECKFMT	__attribute__((format (printf, 1, 2)))
+#define PFUNC		fprintf(stdout, "%s: ", __FUNCTION__)
+#define MSG(fn, ...)\
+{\
+	PFUNC;\
+	fn(__VA_ARGS__);\
+}
+#define die(...)	MSG(die_real, __VA_ARGS__);
+#define err(...)	MSG(err_real, __VA_ARGS__);
+
 #ifdef DEBUG
-# define debug	_debug
+# define	debug(...)	MSG(debug_real, __VA_ARGS__);
 #else
-# define debug	nodebug
+# define	debug(...)	(void)(__VA_ARGS__)
 #endif
 
 #define USED(x)		((void)x)
 #define clientid(c)	(c?(int)c->window:0)
 
 /* action.c */
+void aterm(void);
 void arun(void);
 void anew(void);
 void aresize(void);
@@ -17,7 +27,6 @@ void adelete(void);
 void ahide(void);
 void aswitchvirt(int v);
 void aswitchwin(void);
-void aterm(void);
 
 /* client.c */
 Client *newclient(Window w);
@@ -74,12 +83,14 @@ int uresize(Window w, double aratio, int edge, int but, int mvbut, Rect *r);
 int max(int a, int b);
 int min(int a, int b);
 int mod(int a, int b);
-void die(char *fmt, ...) CHECKFMT;
-void err(char *fmt, ...) CHECKFMT;
-void debug(char *fmt, ...) CHECKFMT;
+void die_real(char *fmt, ...) CHECKFMT;
+void err_real(char *fmt, ...) CHECKFMT;
+void debug_real(char *fmt, ...) CHECKFMT;
 void *emalloc(size_t sz);
 char *estrdup(char *s);
+#ifndef __FreeBSD__
 void setprogname(char *s);
+#endif
 
 /* xutil.c */
 int discard(Window w, long mask, XEvent *last);

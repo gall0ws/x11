@@ -4,7 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __FreeBSD__
+#  define name	getprogname()
+#else
 static char *name;
+#endif
 
 int
 max(int a, int b)
@@ -22,7 +26,7 @@ int
 mod(int a, int b)
 {
 	int y;
-	
+
 	if (b < 0) {
 		return mod(a, -b);
 	}
@@ -59,29 +63,23 @@ vfprint(FILE *fp, char *fmt, va_list ap)
 }
 
 void
-die(char *fmt, ...)
+die_real(char *fmt, ...)
 {
 	PRINT(stderr, fmt);
 	exit(2);
 }
 
 void
-err(char *fmt, ...)
+err_real(char *fmt, ...)
 {
 	PRINT(stderr, fmt);
 }
 
 void
-_debug(char *fmt, ...)
+debug_real(char *fmt, ...)
 {
 	PRINT(stdout, fmt);
 	fflush(stdout);
-}
-
-void
-nodebug(char *fmt, ...)
-{
-	(void)fmt;
 }
 
 void *
@@ -91,7 +89,7 @@ emalloc(size_t sz)
 
 	p = calloc(1, sz);
 	if (!p) {
-		die("could not allocate %u bytes:", sz);
+		die_real("calloc: could not allocate %u bytes:", sz);
 	}
 	return p;
 }
@@ -111,8 +109,10 @@ estrdup(char *s)
 	return t;
 }
 
+#ifndef __FreeBSD__
 void setprogname(char *s)
 {
 	free(name);
 	name = estrdup(s);
 }
+#endif

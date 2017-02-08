@@ -1,9 +1,7 @@
-#include <string.h>
-#include <stdlib.h>
 #include <X11/XF86keysym.h>
 #include <X11/Xatom.h>
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
 #include "dat.h"
 #include "fns.h"
 
@@ -15,13 +13,15 @@ button1(XButtonEvent *e)
 	Rect r;
 	int i, res, edge;
 
+	debug("click");
 	if (e->subwindow == None) {
 		if (hiddens == nil) {
+			debug("no hidden clients: ignore");
 			XAllowEvents(dpy, SyncPointer, e->time);
 			return;
 		}
 		i = menuhit(&unhidemenu, e->button);
-		if (i == -1) {
+		if (i <0) {
 			return;
 		}
 		c = lookup2(&hiddens, i, 1);
@@ -42,12 +42,14 @@ button1(XButtonEvent *e)
 	}
 	c = getclient(e->subwindow, 0);
 	if (c == nil) {
+		debug("no client: replaying pointer");
 		XAllowEvents(dpy, ReplayPointer, e->time);
 		return;
 	}
 	edge = edgeat(c, e->x, e->y);
-	if (edge == -1) {
+	if (edge <0) {
 		if (c == current) {
+			debug("current client: replaying pointer");
 			XAllowEvents(dpy, ReplayPointer, e->time);
 		} else {
 			active(c);
@@ -57,7 +59,7 @@ button1(XButtonEvent *e)
 		memcpy(&r, &c->r, sizeof(r));
 		res = uresize(transwin, c->aratio, edge, e->button, -1, &r);
 		XUnmapWindow(dpy, transwin);
-		if (res != 0) {
+		if (res <0) {
 			return;
 		}
 		geom(c, &r, 0);
@@ -71,12 +73,14 @@ button2(XButtonEvent *e)
 {
 	int v;
 
+	debug("click");
 	if (e->subwindow != None) {
+		debug("replaying click");
 		XAllowEvents(dpy, ReplayPointer, e->time);
 		return;
 	}
 	v = menuhit(&virtmenu, e->button);
-	if (v == -1 || v == curvirt) {
+	if (v <0 || v == curvirt) {
 		return;
 	}
 	aswitchvirt(v);
@@ -91,6 +95,7 @@ button3(XButtonEvent *e)
 	int res, edge;
 	int forcemenu = 0;
 
+	debug("click");
 	c = getclient(e->subwindow, 0);
 	if (c != nil) {
 		edge = edgeat(c, e->x, e->y);
@@ -121,14 +126,15 @@ button3(XButtonEvent *e)
 		actionmenu.lasthit = res;
 		return;
 	}
-	if (c == nil || edge == -1) {
+	if (c == nil || edge <0) {
+		debug("replaying pointer");
 		XAllowEvents(dpy, ReplayPointer, e->time);
 		return;
 	}
 	memcpy(&r, &c->r, sizeof(r));
 	res = umove(transwin, e->button, &r);
 	XUnmapWindow(dpy, transwin);
-	if (res != 0) {
+	if (res <0) {
 		return;
 	}
 	geom(c, &r, 0);
@@ -156,15 +162,22 @@ eclimsg(XClientMessageEvent *e)
 {
 	Client *c;
 
+	debug("event rcvd for %#x", (int)e->window);
 	c = getclient(e->window, 0);
 	if (c == nil) {
+		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
 	if (e->message_type == net_wm_state) {
+		debug("msg type is NET_WM_STATE message");
 		if (e->data.l[1] == net_wm_state_fullscreen) {
+			debug("data is _NET_WM_STATE_FULLSCREEN");
 			fullscr(c, e->data.l[0]);
+		} else {
+			debug("data is %ld (ignored)", e->data.l[1]);
 		}
 	} else if (e->message_type == net_active_window) {
+		debug("msg type is _NET_ACTIVE_WINDOW");
 		c = getclient(e->window, 1);
 		if (c == nil) {
 			err("_NET_ACTIVE_WINDOW request for unmanaged window %#x",
@@ -181,6 +194,7 @@ eclimsg(XClientMessageEvent *e)
 void
 econfig(XConfigureEvent *e)
 {
+	debug("event rcvd for %#x", (int)e->window);
 	if (e->window == root) {
 		rootdx = e->width;
 		rootdy = e->height;
@@ -194,10 +208,10 @@ econfigreq(XConfigureRequestEvent *e)
 	Rect r;
 	int resize;
 
-	debug("econfigreq: %#x", (int)e->window);
+	debug("event rcvd for %#x", (int)e->window);
 	c = getclient(e->window, 0);
 	if (c == nil) {
-		err("config request for unknown window (%#x)", (int)e->window);
+		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
 	resize = 0;
@@ -227,6 +241,7 @@ econfigreq(XConfigureRequestEvent *e)
 		case IconicState:
 			if (c->frame == None) {
 				/* wait for MapRequest */
+				debug("waiting for MapRequest...");
 				break;
 			}
 			(void)getclient(c->window, 1);
@@ -244,13 +259,15 @@ ecreate(XCreateWindowEvent *e)
 {
 	Client *c;
 
+	debug("event rcvd for %#x", (int)e->window);
 	if (e->override_redirect) {
+		debug("override_redirect (skipping)");
 		return;
 	}
 	debug("ecreate: %#x", (int)e->window);
 	c = getclient(e->window, 0);
 	if (c != nil) {
-		err("create event for %#x", clientid(c));
+		err("create event for client %#x", clientid(c));
 		return;
 	}
 	c = newclient(e->window);
@@ -267,6 +284,7 @@ ecross(XCrossingEvent *e)
 {
 	Client *c;
 
+	debug("event rcvd for %#x", (int)e->window);
 	if (e->type == LeaveNotify) {
 		c = getclient(e->window, 0);
 		if (c == nil) {
@@ -282,12 +300,12 @@ edestroy(XDestroyWindowEvent *e)
 	Client *c, *p;
 	int revert;
 
+	debug("event rcvd for %#x", (int)e->window);
 	revert = (current && current->window == e->window);
 	c = getclient(e->window, 1);
 	if (c == nil) {
 		return;
 	}
-	debug("edestroy: %#x", clientid(c));
 	if (revert) {
 		p = getclient(c->trans, 1);
 		if (p == nil) {
@@ -310,6 +328,7 @@ ekey(XKeyEvent *e)
 		XLookupString(e, buf, sizeof(buf), &ksym, nil);
 		switch (ksym) {
 		case XK_Tab:
+			debug("XK_Tab");
 			if ((strcmp(buf, "SWITCH") == 0)) {
 				aswitchwin();
 				mode = SyncKeyboard;
@@ -317,17 +336,21 @@ ekey(XKeyEvent *e)
 			}
 			break;	
 		case XF86XK_Launch0:
+			debug("XF86XK_Launch0");
 			arun();
 			mode = SyncKeyboard;
 			break;
 		case XF86XK_Terminal:
+			debug("XF86XK_Terminal");
 			aterm();
 			mode = SyncKeyboard;
 			break;
 		case XK_Next_Virtual_Screen:
+			debug("XK_Next_Virtual_Screen");
 			aswitchvirt(mod(curvirt + 1,NVirtuals));
 			break;
 		case XK_Prev_Virtual_Screen:
+			debug("XK_Prev_Virtual_Screen");
 			aswitchvirt(mod(curvirt - 1, NVirtuals));
 			break;
 		}
@@ -355,10 +378,10 @@ emapreq(XMapRequestEvent *e)
 	Rect r;
 	int manual, i, res;
 
-	debug("emapreq: %#x", (int)e->window);
+	debug("event rcvd for %#x", (int)e->window);
 	c = getclient(e->window, 1);
 	if (c == nil) {
-		err("map request for unknown window (%#x)", (int)e->window);
+		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
 	if (c->frame == None) {
@@ -405,9 +428,10 @@ emotion(XMotionEvent *e)
 	Client *c;
 	int edge;
 
+	debug("event rcvd for %#x", (int)e->window);
 	c = getclient(e->window, 0);
 	if (c == nil) {
-		err("c == nil on emotion()");
+		err("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
 	edge = edgeat(c, e->x_root, e->y_root);
@@ -423,8 +447,10 @@ eproperty(XPropertyEvent *e)
 	Client *c;
 	int *state;
 
+	debug("event rcvd for %#x", (int)e->window);
 	c = getclient(e->window, 0);
 	if (c == nil) {
+		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
 	switch (e->atom) {
@@ -473,12 +499,13 @@ eunmap(XUnmapEvent *e)
 	Client *c, *p;
 	int revert;
 
-	debug("eunmap: %#x (%d)", (int)e->window, e->send_event);
+	debug("event rcvd for %#x (%d)", (int)e->window, e->send_event);
 	/* ICCCM 2.0, 4.1.4 */
 	if (e->send_event) {
 		revert = (current && current->window == e->window);
 		c = getclient(e->window, 1);
 		if (c == nil) {
+			debug("event for unknown window %#x (skipping)", (int)e->window);
 			return;
 		}
 		if (c->frame) {

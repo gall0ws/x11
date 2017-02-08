@@ -1,6 +1,3 @@
-#include <string.h>
-#include <unistd.h>
-#include <X11/Xlib.h>
 #include "dat.h"
 #include "fns.h"
 
@@ -24,7 +21,7 @@ static int 	windx;
 static int 	windy;
 
 static XFontStruct *font;
-static char *face = "-*-clean-*-r-*-*-14-*-*-*-*-*-*-*";
+static char *face = "-*-terminus-*-*-*-*-14-*-*-*-*-*-*-*";
 
 void
 initmenu(void)

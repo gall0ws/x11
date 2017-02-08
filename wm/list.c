@@ -1,4 +1,3 @@
-#include <X11/Xlib.h>
 #include "dat.h"
 #include "fns.h"
 

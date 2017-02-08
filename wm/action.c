@@ -1,29 +1,35 @@
-#include <string.h>
-#include <unistd.h>
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
 #include "dat.h"
 #include "fns.h"
 
+static char *cmdterm[] =	{ "urxvtc", nil };
 static char *cmdrun[] =		{ "dmenu_run",  "-l", "5", "-fn", "terminus", nil };
-static char *cmdnew[] =		{ "9term", "-f", "/opt/plan9port/font/vga/vga.font", nil };
-static char *cmdterm[] =	{ "rxvt", nil };
+static char *cmdnew[] =		{ "9term", "-f", "/usr/local/plan9/font/vga/vga.font", nil };
 
 static
 void
 spawn(char **argv)
 {
-	switch (fork()) {
-	case -1:
+	pid_t pid;
+
+	debug("forking for %s", argv[0]);
+	pid = fork();
+	if (pid <0) {
 		die("could not fork:");
-		break;
-	case 0:
+	} else if (pid == 0) { // parent
 		if (execvp(*argv, argv) <0) {
 			err("exec failed:");
 		}
-		break;
 	}
+}
+
+void
+aterm(void)
+{
+	spawn(cmdterm);
 }
 
 void
@@ -134,6 +140,7 @@ ahide(void)
 void
 aswitchvirt(int v)
 {
+	debug("switching to virtual %d", v);
 	apply(current, unmap);
 	curvirt = v;
 	apply(current, map);
@@ -210,10 +217,4 @@ aswitchwin(void)
 	}
 quit:
 	XUngrabKeyboard(dpy, CurrentTime);
-}
-
-void
-aterm(void)
-{
-	spawn(cmdterm);
 }

@@ -1,7 +1,3 @@
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <X11/Xlib.h>
 #include "dat.h"
 #include "fns.h"
 
@@ -97,7 +93,7 @@ void
 warpptr(Window w, Rect *r, int edge)
 {
 	int x, y;
-	
+
 	mousexy(w, &x, &y);
 	switch (edge) {
 	case TopLeft:
@@ -165,7 +161,7 @@ uresize(Window w, double aratio, int edge, int but, int mvbut, Rect *r)
 			if (e.xbutton.button == mvbut) {
 				XDefineCursor(dpy, w, cursor[MoveWin]);
 				retv = move(w, mvbut, r);
-				if (retv != 0) {
+				if (retv <0) {
 					goto quit;
 				}
 				lastc = -1;

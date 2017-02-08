@@ -1,9 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <X11/Xatom.h>
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
 #include "dat.h"
 #include "fns.h"
 
@@ -31,6 +28,7 @@ newclient(Window w)
 	Client *c;
 	XClassHint class;
 
+	debug("%#x", (int)w);
 	if (!XGetClassHint(dpy, w, &class)) {
 		class.res_name = nil;
 		class.res_class = nil;
@@ -48,6 +46,7 @@ newclient(Window w)
 void
 freeclient(Client *c)
 {
+	debug("%#x", clientid(c));
 	if (c == nil) {
 		return;
 	}
@@ -64,6 +63,10 @@ freeclient(Client *c)
 void
 manage(Client *c)
 {
+	debug("%#x", clientid(c));
+	if (c->frame) {
+		err("managing a window (%#x) already framed (%#x)", (int)c->window, (int)c->frame)
+	}
 	c->frame = newframe();
 	XSetWindowBorderWidth(dpy, c->window, 0);
 	XReparentWindow(dpy, c->window, c->frame, 0, 0);
@@ -90,6 +93,7 @@ _setstate(Client *c, int state)
 void
 map(Client *c)
 {
+	debug("%#x", clientid(c));
 	if (c->frame) {
 		XMapWindow(dpy, c->frame);
 	}
@@ -100,6 +104,7 @@ map(Client *c)
 void
 unmap(Client *c)
 {
+	debug("%#x", clientid(c));
 	if (c->frame) {
 		XUnmapWindow(dpy, c->frame);
 	}
@@ -110,6 +115,7 @@ unmap(Client *c)
 void
 withdrawn(Client *c)
 {
+	debug("%#x", clientid(c));
 	if (c->frame) {
 		XUnmapWindow(dpy, c->frame);
 	}
@@ -123,6 +129,7 @@ setactive(Client *c, int on)
 {
 	Window focus;
 
+	debug("%#x (%d)", clientid(c), on);
 	if (on) {
 		focus = c->setinput? c->window : nofocus;
 		XSetInputFocus(dpy, focus, RevertToPointerRoot, CurrentTime);
@@ -143,6 +150,7 @@ fullscr(Client *c, int on)
 {
 	Rect r;
 
+	debug("%#x (%d)", clientid(c), c->ewmh.fullscr);
 	if (c->ewmh.fullscr == on) {
 		return;
 	}
@@ -168,8 +176,9 @@ geom(Client *c, Rect *r, int win)
 	uint mask;
 	XWindowChanges wc;
 
+	debug("%#x (%d)", clientid(c), win);
 	if (!win && !c->frame) {
-		err("warning: geometry change for frame, but %#x has no frame!", clientid(c));
+		err("warning: geometry change for %#x frame, but it has no frame!", clientid(c));
 	}
 	memcpy(&c->r, r, sizeof(*r));
 	if (win && c->frame) {
@@ -191,7 +200,9 @@ geom(Client *c, Rect *r, int win)
 void
 active(Client *c)
 {
+	debug("%#x", clientid(c));
 	if (c == nil) {
+		debug("skipping unknown window %#x", clientid(c));
 		return;
 	}
 	if (c->frame) {
