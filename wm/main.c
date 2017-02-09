@@ -211,26 +211,20 @@ main(int argc, char **argv)
 	name = basename(argv[0]);
 	setprogname(name);
 
-	while ((ch = getopt(argc, argv, "cfs")) != -1) {
+	while ((ch = getopt(argc, argv, "f")) != -1) {
 		switch (ch) {
-			case 'c':
-				focuspolicy = FocusClick;
-				break;
 			case 'f':
-				focuspolicy = FocusFollowMouse;
-				break;
-			case 's':
-				focuspolicy = FocusSloppy;
-				err("*** sloppy focus policy is bugged! ***");
+				focuspolicy = FocusFollowsMouse;
 				break;
 			case '?':
 			default:
-				printf("usage:  %s [-fsc]\n", name);
+				printf("usage:  %s [-f]\n", name);
 				exit(64);
 		}
 	}
 	argc -= optind;
 	argv += optind;
+	debug("focus policy: %d", focuspolicy);
 
 	if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
 		die("failed signal:");

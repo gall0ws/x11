@@ -37,7 +37,6 @@ void unmap(Client *c);
 void withdrawn(Client *c);
 void wraise(Client *c);
 void active(Client *c);
-void deactive(Client *c);
 void fullscr(Client *c, int on);
 void geom(Client *c, Rect *r, int winrect);
 void synchints(Client *c);

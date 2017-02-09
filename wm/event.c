@@ -168,6 +168,7 @@ eclimsg(XClientMessageEvent *e)
 		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
+	debug("handling event for %#x [%#x] (%s)", (int)c->window, (int)c->frame, c->name);
 	if (e->message_type == net_wm_state) {
 		debug("msg type is NET_WM_STATE message");
 		if (e->data.l[1] == net_wm_state_fullscreen) {
@@ -214,6 +215,7 @@ econfigreq(XConfigureRequestEvent *e)
 		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
+	debug("handling event for %#x [%#x] (%s)", (int)c->window, (int)c->frame, c->name);
 	resize = 0;
 	memcpy(&r, &c->r, sizeof(r));
 	if (e->value_mask & CWX) {
@@ -286,21 +288,25 @@ ecross(XCrossingEvent *e)
 
 	debug("event rcvd for %#x: notify: %s",
 		(int)e->window, (e->type == EnterNotify)? "Enter" : "Leave");
-	if (e->type == LeaveNotify) {
+
+	switch (e->type) {
+	case LeaveNotify:
 		c = getclient(e->window, 0);
 		if (c == nil) {
 			return;
 		}
 		XUndefineCursor(dpy, c->frame);
-		if (focuspolicy == FocusSloppy) {
-			deactive(c);
+		break;
+	case EnterNotify:
+		if (focuspolicy == FocusFollowsMouse) {
+			c = getclient(e->window, 0);
+			if (c != nil) {
+				active(c);
+			}
 		}
-	} else if (e->type == EnterNotify && focuspolicy != FocusClick) {
-		c = getclient(e->window, 0);
-		if (c == nil) {
-			return;
-		}
-		active(c);
+		break;
+	default:
+		err("unexpected XCrossingEvent with type %d", e->type);
 	}
 }
 
@@ -316,6 +322,7 @@ edestroy(XDestroyWindowEvent *e)
 	if (c == nil) {
 		return;
 	}
+	debug("handling event for %#x [%#x] (%s)", (int)c->window, (int)c->frame, c->name);
 	if (revert) {
 		p = getclient(c->trans, 1);
 		if (p == nil) {

@@ -234,28 +234,13 @@ active(Client *c)
 		return;
 	} else {
 		for (p=clients[curvirt]; p!=nil; p=p->next) {
-			if (p->hasfocus) {
+			if (p != c && p->hasfocus) {
 				setactive(p, 0);
+				break;
 			}
 		}
 	}
 	setactive(c, 1);
-}
-
-/* used only when using sloppy focus policy is on */
-void
-deactive(Client *c)
-{
-	if (c == nil) {
-		debug("skipping unknown window %#x", clientid(c));
-		return;
-	}
-	if (focuspolicy != FocusSloppy) {
-		err("focus policy is not FocusSloppy: this should never happen");
-		return;
-	}
-	setactive(c, 0);
-	XSetInputFocus(dpy, None, None, CurrentTime);
 }
 
 /* ICCCM 2.0, 4.1.2.3

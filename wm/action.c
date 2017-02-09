@@ -165,7 +165,7 @@ loop:
 		--i;
 		goto loop;
 	}
-	active(c);
+	wraise(c);
 	return i+1;
 }
 

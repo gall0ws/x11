@@ -19,8 +19,7 @@
 
 enum {
 	FocusClick,
-	FocusFollowMouse,
-	FocusSloppy,
+	FocusFollowsMouse,
 };
 
 enum {
