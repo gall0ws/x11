@@ -357,6 +357,13 @@ ekey(XKeyEvent *e)
 			arun();
 			mode = SyncKeyboard;
 			break;
+		case XF86XK_LaunchF:
+			debug("XF86XK_LaunchF");
+			if (current != nil) {
+				fullscr(current, !current->ewmh.fullscr);
+			}
+			mode = SyncKeyboard;
+			break;
 		case XF86XK_Terminal:
 			debug("XF86XK_Terminal");
 			aterm();
