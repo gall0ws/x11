@@ -1,8 +1,7 @@
 #define CHECKFMT	__attribute__((format (printf, 1, 2)))
-#define PFUNC		fprintf(stdout, "%s: ", __FUNCTION__)
 #define MSG(fn, ...)\
 {\
-	PFUNC;\
+	fprintf(stdout, "%s: %s: ", getprogname(), __FUNCTION__);\
 	fn(__VA_ARGS__);\
 }
 #define die(...)	MSG(die_real, __VA_ARGS__);
@@ -23,6 +22,7 @@ void arun(void);
 void anew(void);
 void aresize(void);
 void amove(void);
+void astick(void);
 void adelete(void);
 void ahide(void);
 void aswitchvirt(int v);
@@ -38,6 +38,7 @@ void withdrawn(Client *c);
 void wraise(Client *c);
 void active(Client *c);
 void fullscr(Client *c, int on);
+void sticky(Client *c, int on);
 void geom(Client *c, Rect *r, int winrect);
 void synchints(Client *c);
 void syncname(Client *c);

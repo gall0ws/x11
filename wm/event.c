@@ -48,8 +48,8 @@ button1(XButtonEvent *e)
 	}
 	edge = edgeat(c, e->x, e->y);
 	if (edge <0) {
-		if (c == current) {
-			debug("current client: replaying pointer");
+		if (c == current || c->ewmh.sticky) {
+			wraise(c);
 			XAllowEvents(dpy, ReplayPointer, e->time);
 		} else {
 			wraise(c);
@@ -104,7 +104,7 @@ button3(XButtonEvent *e)
 	}
 	if (e->subwindow == None || forcemenu) {
 		res = menuhit(&actionmenu, e->button);
-		switch (res) {
+		switch (res) { // TODO: replace with a table
 		case -1:
 			return;
 		case New:
@@ -115,6 +115,9 @@ button3(XButtonEvent *e)
 			break;
 		case Move:
 			amove();
+			break;
+		case Stick:
+			astick();
 			break;
 		case Delete:
 			adelete();
@@ -174,6 +177,8 @@ eclimsg(XClientMessageEvent *e)
 		if (e->data.l[1] == net_wm_state_fullscreen) {
 			debug("data is _NET_WM_STATE_FULLSCREEN");
 			fullscr(c, e->data.l[0]);
+		} else if (e->data.l[1] == net_wm_state_sticky) {
+			sticky(c, e->data.l[0]);
 		} else {
 			debug("data is %ld (ignored)", e->data.l[1]);
 		}
@@ -408,10 +413,10 @@ emapreq(XMapRequestEvent *e)
 		debug("event for unknown window %#x (skipping)", (int)e->window);
 		return;
 	}
+	manual = 0;
 	if (c->frame == None) {
 		manage(c);
 	}
-	manual = 0;
 	for (i=0; c->rcname && rcname[i]!=nil; i++) {
 		if (strcmp(c->rcname, rcname[i]) == 0) {
 			res = upickxy(Button3, &r.x, &r.y);
@@ -429,6 +434,7 @@ emapreq(XMapRequestEvent *e)
 				manual = 1;
 			} else if (c->is9term) {
 				XKillClient(dpy, c->window);
+
 				goto quit;
 			}
 			break;

@@ -36,6 +36,7 @@ enum {
 	New,
 	Resize,
 	Move,
+	Stick,
 	Delete,
 	Hide,
 	NActions
@@ -79,9 +80,10 @@ struct Proto {
 };
 
 struct Ewmh {
-	int	name	 : 1;
-	int	iconname : 1;
-	int	fullscr  : 1;
+	int	name		: 1;
+	int	iconname	: 1;
+	int	fullscr		: 1;
+	int	sticky		: 1;
 	Rect	oldr;
 };
 
@@ -94,13 +96,15 @@ struct Client {
 	Ewmh	ewmh;
 	double	aratio;
 	int	state;
-	int	setinput : 1;
-	int	is9term  : 1;
-	int	hasfocus: 1;
-	char	*rcname;
+	int	setinput 	: 1;
+	int	is9term  	: 1;
+	int	hasfocus	: 1;
+	int	overredir	: 1;
+	char *rcname;
 	char	*class;
 	char	*name;
 	char	*iconname;
+
 	Client	*next;
 };
 
@@ -115,6 +119,7 @@ Atom	net_wm_icon_name;
 Atom	net_wm_name;
 Atom	net_wm_state;
 Atom	net_wm_state_fullscreen;
+Atom	net_wm_state_sticky;
 Atom	ninewm_lose_focus;
 Atom	wm_delete_window;
 Atom	wm_protocols;
@@ -130,6 +135,7 @@ Menu	virtmenu;
 Menu	unhidemenu;
 Cursor	cursor[NCursors];
 Client	*clients[NVirtuals];
+Client *stickies;
 Client	*hiddens;
 Client	*limbo;
 ulong	bcolor[2];	/* inactive, active */

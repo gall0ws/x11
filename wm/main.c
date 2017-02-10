@@ -15,6 +15,7 @@ static char *actionitem[NActions+1] = {
 	"New",
 	"Resize",
 	"Move",
+	"Stick",
 	"Delete",
 	"Hide",
 	nil,
@@ -137,6 +138,7 @@ init(void)
 	net_wm_name = XInternAtom(dpy, "_NET_WM_NAME", False);
 	net_wm_state = XInternAtom(dpy, "_NET_WM_STATE", False);
 	net_wm_state_fullscreen = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
+	net_wm_state_sticky = XInternAtom(dpy, "_NET_WM_STATE_STICKY", False);
 	ninewm_lose_focus = XInternAtom(dpy, "_9WM_LOSE_FOCUS", False);
 	wm_delete_window = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
 	wm_protocols = XInternAtom(dpy, "WM_PROTOCOLS", False);

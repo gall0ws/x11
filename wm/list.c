@@ -72,7 +72,11 @@ getclient(Window w, int rem)
 			return c;
 		}
 	}
-	return lookup(&hiddens, w, rem);
+	c = lookup(&stickies, w, rem);
+	if (c == nil) {
+		c = lookup(&hiddens, w, rem);
+	}
+	return c;
 }
 
 void

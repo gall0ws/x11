@@ -5,9 +5,9 @@
 #include "dat.h"
 #include "fns.h"
 
-static char *cmdterm[] =	{ "urxvtc", nil };
+static char *cmdnew[] =	{ "urxvtc", nil };
 static char *cmdrun[] =		{ "dmenu_run",  "-l", "5", "-fn", "terminus", nil };
-static char *cmdnew[] =		{ "9term", "-f", "/usr/local/plan9/font/vga/vga.font", nil };
+static char *cmdterm[] =		{ "9term", "-f", "/usr/local/plan9/font/vga/vga.font", nil };
 
 static
 void
@@ -92,6 +92,30 @@ amove(void)
 }
 
 void
+astick(void)
+{
+	Window w;
+	Client *c;
+	int tostick = 1;
+
+	w = upickw(Button3);
+	if (w == None || w == root) {
+		return;
+	}
+	c = getclient(w, 1);
+	if (c == nil) {
+		return;
+	}
+	if (c->ewmh.sticky) {
+		tostick = 0;
+		add(&clients[curvirt], c);
+	} else {
+		add(&stickies, c);
+	}
+	sticky(c, tostick);
+}
+
+void
 adelete(void)
 {
 	Window w;
@@ -140,11 +164,26 @@ ahide(void)
 void
 aswitchvirt(int v)
 {
+	Client *p;
+
 	debug("switching to virtual %d", v);
 	apply(current, unmap);
 	curvirt = v;
 	apply(current, map);
-	active(current);
+
+	// rise the right window:
+	for (p=current; p!=nil; p=p->next) {
+		if (p->ewmh.fullscr) {
+			break;
+		}
+		if (!p->ewmh.sticky) {
+			break;
+		}
+	}
+	if (p != nil) {
+		current = p;
+	}
+	wraise(current);
 	virtmenu.lasthit = v;
 }
 

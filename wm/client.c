@@ -22,6 +22,27 @@ newframe(void)
 	return w;
 }
 
+static
+void
+hideframe(Client *c, int on)
+{
+	if (c->frame == None) {
+		err("request to %s, a nonexistent frame (client: %#x (%s))",
+		    on? "hide":"unhide", (int)c->window, c->name);
+		return;
+	}
+	if (on) {
+		XSetWindowBorderWidth(dpy, c->frame, 0);
+		c->r.x += BorderWidth;
+		c->r.y += BorderWidth;
+	} else {
+		c->r.x -= BorderWidth;
+		c->r.y -= BorderWidth;
+		XSetWindowBorderWidth(dpy, c->frame, BorderWidth);
+	}
+	geom(c, &c->r, 0);
+}
+
 Client *
 newclient(Window w)
 {
@@ -140,7 +161,7 @@ setactive(Client *c, int on)
 	} else if (c->proto.losefocus) {
 		sendmsg(c->window, ninewm_lose_focus);
 	}
-	if (c->frame) {
+	if (c->frame && !c->ewmh.sticky) {
 		XSetWindowBorder(dpy, c->frame, bcolor[on]);
 	}
 }
@@ -169,6 +190,19 @@ fullscr(Client *c, int on)
 	/* this one must be changed if we're going to support other _NET_WM_STATE states: */
 	XChangeProperty(dpy, c->window, net_wm_state, XA_ATOM, 32, 
 		PropModeReplace, (uchar *)&net_wm_state_fullscreen, on);
+}
+
+void
+sticky(Client *c, int on)
+{
+	if (c->ewmh.sticky == on) {
+		return;
+	}
+	c->ewmh.sticky = on;
+	XChangeProperty(dpy, c->window, net_wm_state, XA_ATOM, 32,
+			PropModeReplace, (uchar *)&net_wm_state_sticky, on);
+
+	hideframe(c, on);
 }
 
 void
@@ -209,7 +243,7 @@ void wraise(Client *c)
 		XRaiseWindow(dpy, c->frame);
 	}
 	XRaiseWindow(dpy, c->window);
-	if (c != current) { /* restack */
+	if (c != current && !c->ewmh.sticky) { /* restack */
 		if (current) {
 			setactive(current, 0);
 			(void)lookup(&current, c->window, 1);
@@ -396,6 +430,8 @@ dumpclients(void)
 		printf("virtual %d\n", i+1);
 		apply(clients[i], printcli);
 	}
+	printf("stickies\n");
+	apply(stickies, printcli);
 	printf("hiddens\n");
 	apply(hiddens, printcli);
 	printf("limbo\n");
