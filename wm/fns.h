@@ -10,7 +10,7 @@
 #ifdef DEBUG
 # define	debug(...)	MSG(debug_real, __VA_ARGS__);
 #else
-# define	debug(...)	(void)(__VA_ARGS__)
+# define	debug(x, ...)	USED(x)
 #endif
 
 #define USED(x)		((void)x)
