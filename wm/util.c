@@ -44,9 +44,6 @@ vfprint(FILE *fp, char *fmt, va_list ap)
 	if (fp == stderr) {
 		fflush(stdout);
 	}
-	if (name) {
-		fprintf(fp, "%s: ", name);
-	}
 	vfprintf(fp, fmt, ap);
 	if (fmt[0] != '\0' && fmt[strlen(fmt)-1] == ':') {
 		fprintf(fp, " %s", strerror(errno));
