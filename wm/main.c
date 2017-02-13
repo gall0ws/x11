@@ -171,8 +171,8 @@ init(void)
 	} else {
 		cmap = XCreateColormap(dpy, root, vinfo.visual, AllocNone);
 		mask = CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap;
-		attr.background_pixel = TRANSBR;
-		attr.border_pixel = TRANSBG;
+		attr.background_pixel = TRANSBG;
+		attr.border_pixel = TRANSBR;
 		attr.colormap = cmap;
 		transwin = XCreateWindow(dpy, root, 0, 0, 1, 1, BorderWidth,
 		    32, InputOutput, vinfo.visual, mask, &attr);
