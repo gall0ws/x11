@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <X11/Xlib.h>
 
+#include "config.h"
+
 #define ButtonMask	ButtonPressMask | ButtonReleaseMask
 #define KeyMask		KeyPressMask | KeyReleaseMask
 #define CrossingMask	EnterWindowMask | LeaveWindowMask

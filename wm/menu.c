@@ -21,7 +21,7 @@ static int 	windx;
 static int 	windy;
 
 static XFontStruct *font;
-static char *face = "-*-terminus-*-*-*-*-14-*-*-*-*-*-*-*";
+static char *face = MENUFACE;
 
 void
 initmenu(void)
@@ -40,24 +40,25 @@ initmenu(void)
 	}
 
 	mask = CWBorderPixel | CWOverrideRedirect;
-	attr.border_pixel = 0xFF88CC88;
+	attr.border_pixel = MENUBR;
 	attr.override_redirect = 1;
 	win = XCreateWindow(dpy, root, 0, 0, 1, 1, Border, 
 	    CopyFromParent, CopyFromParent, CopyFromParent,
 	    mask, &attr);
 
+
 	mask = GCForeground | GCFont;
 	v.font = font->fid;
-	v.foreground = 0xFF000000;
+	v.foreground = MENUTXTFG_U;
 	gctext[Unselected] = XCreateGC(dpy, win, mask, &v);
 	v.font = font->fid;
-	v.foreground = 0xFFEAFFEA;
+	v.foreground = MENUTXTFG_S;
 	gctext[Selected] = XCreateGC(dpy, win, mask, &v);
 
 	mask = GCForeground;
-	v.foreground = 0xFFEAFFEA;
+	v.foreground = MNUSLOTFG_U;
 	gcslot[Unselected] = XCreateGC(dpy, win, mask, &v);
-	v.foreground = 0xFF448844;
+	v.foreground = MENUSLOTFG_S;
 	gcslot[Selected] = XCreateGC(dpy, win, mask, &v);
 }
 
@@ -163,6 +164,8 @@ prepare(Menu *m)
 	windy = SLOTDY * i;
 	return i;
 }
+
+
 
 int
 menuhit(Menu *m, int but)

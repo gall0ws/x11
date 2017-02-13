@@ -29,9 +29,11 @@ static char *virtitem[NVirtuals+1] = {
 	nil,
 };
 
+static int usexcursors = 0;
+
 static
 int
-error(Display *dpy, XErrorEvent *e)
+xerror(Display *dpy, XErrorEvent *e)
 {
 	char msg[128];
 	char buf[8];
@@ -146,8 +148,8 @@ init(void)
 	wm_take_focus = XInternAtom(dpy, "WM_TAKE_FOCUS", False);
 
 	// frame colors
-	bcolor[Active] = 0xFF57A8A8;
-	bcolor[Inactive] = 0xFF9FEFEF;
+	bcolor[Active] = ACTIVEBR;
+	bcolor[Inactive] = INACTIVEBR;
 
 	// creating blankwin
 	mask = CWOverrideRedirect;
@@ -157,8 +159,8 @@ init(void)
 	XMapWindow(dpy, nofocus);
 	XSetInputFocus(dpy, nofocus, None, CurrentTime);
 	mask = CWBackPixel | CWBorderPixel | CWOverrideRedirect;
-	attr.background_pixel = 0xFFEFEFEF;
-	attr.border_pixel = 0xFFAA0000;
+	attr.background_pixel = BLANKBG;
+	attr.border_pixel = BLANKBR;
 	attr.override_redirect = 1;
 	blankwin = XCreateWindow(dpy, root, 0, 0, 1, 1, BorderWidth,
 	    CopyFromParent, InputOutput, CopyFromParent, mask, &attr);
@@ -169,15 +171,15 @@ init(void)
 	} else {
 		cmap = XCreateColormap(dpy, root, vinfo.visual, AllocNone);
 		mask = CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap;
-		attr.background_pixel = 0x20000000;
-		attr.border_pixel = 0xFFBB0000;
+		attr.background_pixel = TRANSBR;
+		attr.border_pixel = TRANSBG;
 		attr.colormap = cmap;
 		transwin = XCreateWindow(dpy, root, 0, 0, 1, 1, BorderWidth,
 		    32, InputOutput, vinfo.visual, mask, &attr);
 		XFreeColormap(dpy, cmap);
 	}
 
-	initcursor(0);
+	initcursor(usexcursors);
 	initmenu();
 	unhidemenu.gen = unhidegen;
 	actionmenu.item = actionitem;
@@ -205,6 +207,14 @@ init(void)
 	    GrabModeSync, GrabModeAsync, None, None);
 }
 
+static
+void
+usage()
+{
+	printf("usage: %s [-fx] [mntpnt]\n", getprogname());
+	exit(64);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -215,25 +225,27 @@ main(int argc, char **argv)
 	name = basename(argv[0]);
 	setprogname(name);
 
-	while ((ch = getopt(argc, argv, "f")) != -1) {
-		switch (ch) {
-			case 'f':
-				focuspolicy = FocusFollowsMouse;
-				break;
-			case '?':
-			default:
-				printf("usage:  %s [-f]\n", name);
-				exit(64);
-		}
-	}
-	argc -= optind;
-	argv += optind;
-	debug("focus policy: %d", focuspolicy);
-
 	if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
 		die("failed signal:");
 	}
-	XSetErrorHandler(error);
+
+	while ((ch = getopt(argc, argv, "fx")) != -1) {
+		switch (ch) {
+		case 'f':
+			focuspolicy = FocusFollowsMouse;
+			break;
+		case 'x':
+			usexcursors = 1;
+			break;
+		case '?':
+		default:
+			usage();
+		}
+	}
+	debug("focus policy: %d", focuspolicy);
+	debug("use X11 cursors: %d", usexcursors);
+
+	XSetErrorHandler(xerror);
 	dpy = XOpenDisplay(nil);
 	if (dpy == nil) {
 		die("could not open display");
@@ -246,7 +258,7 @@ main(int argc, char **argv)
 	XSync(dpy, 0); /* exit here if another window manager is running */
 	init();
 	adoptclients();
-	XSetWindowBackground(dpy, root, 0xFF808080);
+	XSetWindowBackground(dpy, root, ROOTBG);
 	XClearWindow(dpy, root);
 	XDefineCursor(dpy, root, cursor[Normal]);
 	for (;;) {
