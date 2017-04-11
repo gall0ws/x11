@@ -160,10 +160,22 @@ ebutton(XButtonEvent *e)
 	}
 }
 
+
+struct WSTBL {
+	char *name;
+	Atom *atom;
+	void (*fn)(Client *, int);
+} wstbl[] = {
+		{ "fullscreen", 	&net_wm_state_fullscreen,	fullscr  },
+		{ "sticky",		&net_wm_state_sticky, 		sticky   },
+		{ nil, nil, nil }
+};
+
 void
 eclimsg(XClientMessageEvent *e)
 {
 	Client *c;
+	int i;
 
 	debug("event rcvd for %#x", (int)e->window);
 	c = getclient(e->window, 0);
@@ -174,13 +186,16 @@ eclimsg(XClientMessageEvent *e)
 	debug("handling event for %#x [%#x] (%s)", (int)c->window, (int)c->frame, c->name);
 	if (e->message_type == net_wm_state) {
 		debug("msg type is NET_WM_STATE message");
-		if (e->data.l[1] == net_wm_state_fullscreen) {
-			debug("data is _NET_WM_STATE_FULLSCREEN");
-			fullscr(c, e->data.l[0]);
-		} else if (e->data.l[1] == net_wm_state_sticky) {
-			sticky(c, e->data.l[0]);
-		} else {
-			debug("data is %ld (ignored)", e->data.l[1]);
+		for (i=0; wstbl[i].atom; i++) {
+			if (e->data.l[1] == *wstbl[i].atom) {
+				debug("%d [%s] %s %ld",
+					(int)c->window, c->name, wstbl[i].name, e->data.l[0]);
+				wstbl[i].fn(c, e->data.l[0]);
+				break;
+			}
+		}
+		if (wstbl[i].atom == nil) {
+			debug("state is %ld (ignored)", e->data.l[1]);
 		}
 	} else if (e->message_type == net_active_window) {
 		debug("msg type is _NET_ACTIVE_WINDOW");
