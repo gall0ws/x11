@@ -1,9 +1,9 @@
-CC=gcc
-LD=gcc
-MAKE=make
+CC=cc
+LD=cc
+MAKE=gmake
 STRIP=strip
 
-CPPFLAGS=
+CPPFLAGS=-I/usr/local/include/
 CFLAGS=\
 	-g\
 	-Wall\
@@ -13,7 +13,7 @@ CFLAGS=\
 	-Wno-missing-braces\
 	-Wno-parentheses\
 	-Wno-sign-compare
-LDFLAGS=
+LDFLAGS=-L/usr/local/lib/
 LDLIBS=-lX11
 
 PREFIX?=	$(HOME)
