@@ -221,6 +221,7 @@ main(int argc, char **argv)
 	XEvent e;
 	int ch;
 	char *name;
+	char *dpyname = nil;
 
 	name = basename(argv[0]);
 	setprogname(name);
@@ -229,8 +230,11 @@ main(int argc, char **argv)
 		die("failed signal:");
 	}
 
-	while ((ch = getopt(argc, argv, "fx")) != -1) {
+	while ((ch = getopt(argc, argv, "d:fx")) != -1) {
 		switch (ch) {
+		case 'd':
+			dpyname = optarg;
+			break;
 		case 'f':
 			focuspolicy = FocusFollowsMouse;
 			break;
@@ -246,7 +250,7 @@ main(int argc, char **argv)
 	debug("use X11 cursors: %d", usexcursors);
 
 	XSetErrorHandler(xerror);
-	dpy = XOpenDisplay(nil);
+	dpy = XOpenDisplay(dpyname);
 	if (dpy == nil) {
 		die("could not open display");
 	}
