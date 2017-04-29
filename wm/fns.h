@@ -13,6 +13,10 @@
 # define	debug(x, ...)	USED(x)
 #endif
 
+#ifdef __linux__
+# define NEED_SETPROGNAME
+#endif
+
 #define USED(x)		((void)x)
 #define clientid(c)	(c?(int)c->window:0)
 
@@ -90,8 +94,9 @@ void err_real(char *fmt, ...) CHECKFMT;
 void debug_real(char *fmt, ...) CHECKFMT;
 void *emalloc(size_t sz);
 char *estrdup(char *s);
-#ifndef __FreeBSD__
-void setprogname(char *s);
+#ifdef NEED_SETPROGNAME
+const char *getprogname();
+void setprogname(const char *s);
 #endif
 
 /* xutil.c */
@@ -102,4 +107,3 @@ int grab(Window w, Cursor c);
 void ungrab(void);
 void mousexy(Window w, int *x, int *y);
 int xfree(void *data);
-

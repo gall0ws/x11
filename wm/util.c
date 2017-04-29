@@ -4,12 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef __FreeBSD__
-#  define name	getprogname()
-#else
-static char *name;
-#endif
-
 int
 max(int a, int b)
 {
@@ -106,10 +100,20 @@ estrdup(char *s)
 	return t;
 }
 
-#ifndef __FreeBSD__
-void setprogname(char *s)
+#ifdef NEED_SETPROGNAME
+
+static char *name;
+
+const char *
+getprogname(void)
+{
+	return name;
+}
+
+void setprogname(const char *s)
 {
 	free(name);
-	name = estrdup(s);
+	_name = estrdup(s);
 }
-#endif
+
+#endif /* NEED_SETPROGNAME */
