@@ -211,7 +211,7 @@ static
 void
 usage()
 {
-	printf("usage: %s [-fx] [mntpnt]\n", getprogname());
+	printf("usage: %s [-fx] [-d display]\n", getprogname());
 	exit(64);
 }
 
@@ -225,10 +225,6 @@ main(int argc, char **argv)
 
 	name = basename(argv[0]);
 	setprogname(name);
-
-	if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
-		die("failed signal:");
-	}
 
 	while ((ch = getopt(argc, argv, "d:fx")) != -1) {
 		switch (ch) {
@@ -248,6 +244,10 @@ main(int argc, char **argv)
 	}
 	debug("focus policy: %d", focuspolicy);
 	debug("use X11 cursors: %d", usexcursors);
+
+	if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
+		die("failed signal:");
+	}
 
 	XSetErrorHandler(xerror);
 	dpy = XOpenDisplay(dpyname);
